@@ -4,11 +4,7 @@ A Resque plugin which makes handling jobs that use rate limited apis easier
 
 If you have a series of jobs in a queue, this gem will pause the queue when one of the jobs hits a rate limit, and re-start the queue when the rate limit has expired.
 
-There are two ways to use the gem.
-
-If the api you are using has a dedicated queue included in the gem (currently Twitter, Angellist and Evernote) then you just need to make some very minor changes to how you queue jobs, and the gem will do the rest.
-
-If you are using another API, then you need to write a little code that catches the rate limit signal.
+You need to write a little code that catches the rate limit signal.
 
 ## Installation
 
@@ -79,26 +75,6 @@ Resque::Plugins::RateLimitedQueue.TwitterQueue.un_pause
 Resque::Plugins::RateLimitedQueue.AngellistQueue.un_pause
 MyQueue.un_pause
 MyJob.un_pause
-```
-### A pausable job using one of the build-in queues (Twitter, Angellist, Evernote)
-If you're using the [twitter gem](https://github.com/sferik/twitter), this is really simple. Instead of queuing using Resque.enqueue, you just use Resque::Plugins::RateLimitedQueue:TwitterQueue.enqueue.
-
-Make sure your code in perform doesn't catch the rate_limit exception.
-
-The TwitterQueue will catch the exception and pause the queue (as well as re-scheduling the jobs and scheduling an un pause (if you are using resque-scheduler)). Any jobs you add while the queue is paused will be added to the paused queue
-
-```ruby
-class TwitterJob
-  class << self
-    def refresh(handle)
-      Resque::Plugins::RateLimitedQueue:TwitterQueue.enqueue(TwitterJob, handle)
-    end
-
-    def perform(handle)
-      do_something_with_the_twitter_gem(handle)
-    end
-  end
-end
 ```
 
 ### A single class of pausable job using a new api
